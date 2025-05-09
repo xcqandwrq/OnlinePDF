@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ascii transform</title>
+</head>
+<body>
+
+  <label for="textInput">请输入 ASCII 字符串：</label>
+  <input type="text" id="textInput" placeholder="输入内容"><br><br>
+
+  <label for="selectInput">请选择操作：</label>
+  <select id="selectInput">
+    <option value="transform">ASCII - 8</option>
+    <option value="recovery">ASCII + 8</option>
+  </select><br><br>
+
+  <button onclick="handleSubmit()">提交</button>
+
+  <p id="result"></p>
+
+  <script>
+    function stringTransform(s) {
+      let result = '';
+      for (let i = 0; i < s.length; i++) {
+        result += String.fromCharCode(s.charCodeAt(i) - 8);
+      }
+      return result;
+    }
+
+    function recoverStringTransform(s) {
+      let result = '';
+      for (let i = 0; i < s.length; i++) {
+        result += String.fromCharCode(s.charCodeAt(i) + 8);
+      }
+      return result;
+    }
+
+    function handleSubmit() {
+      const textValue = document.getElementById('textInput').value;
+      const selectValue = document.getElementById('selectInput').value;
+      let output = '';
+
+      if (selectValue === 'transform') {
+        output = stringTransform(textValue);
+      } else if (selectValue === 'recovery') {
+        output = recoverStringTransform(textValue);
+      }
+
+      document.getElementById('result').innerText = `结果: ${output}`;
+    }
+  </script>
+</body>
+</html>
