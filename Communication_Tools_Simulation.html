@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>并行通信算法模拟器</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .algorithm-section {
+            margin-bottom: 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+        }
+        
+        .algorithm-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .algorithm-title {
+            font-size: 1.8em;
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .algorithm-description {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+        
+        .states-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .state {
+            border: 2px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 20px;
+            background: white;
+        }
+        
+        .state-title {
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .initial-state .state-title {
+            background: linear-gradient(135deg, #ff6b6b, #ffa8a8);
+            color: white;
+        }
+        
+        .final-state .state-title {
+            background: linear-gradient(135deg, #51cf66, #8ce99a);
+            color: white;
+        }
+        
+        .process {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            transition: all 0.2s ease;
+        }
+        
+        .process:hover {
+            transform: scale(1.02);
+        }
+        
+        .process0 { background: #ffe0e0; border-left: 4px solid #ff6b6b; }
+        .process1 { background: #e0f0ff; border-left: 4px solid #4dabf7; }
+        .process2 { background: #e0ffe0; border-left: 4px solid #51cf66; }
+        .process3 { background: #fff0e0; border-left: 4px solid #ffa94d; }
+        
+        .data-flow {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .step {
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+        
+        .control-panel {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 12px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 5px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 8px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #ffeaa7, #fdcb6e);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .states-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 并行通信算法模拟器</h1>
+        
+        <div class="control-panel">
+            <h3>选择算法进行模拟：</h3>
+            <button onclick="showAlgorithm('broadcast')">📢 Broadcast</button>
+            <button onclick="showAlgorithm('scatter')">📋 Scatter</button>
+            <button onclick="showAlgorithm('gather')">🔄 Gather</button>
+            <button onclick="showAlgorithm('allgather')">🔄 AllGather</button>
+            <button onclick="showAlgorithm('reduce')">➕ Reduce</button>
+            <button onclick="showAlgorithm('allreduce')">➕ AllReduce</button>
+            <button onclick="showAlgorithm('scatterreduce')">📋➕ ScatterReduce</button>
+            <button onclick="showAlgorithm('alltoall')">🔀 All-to-All</button>
+        </div>
+        
+        <div id="algorithms-container">
+            <!-- Broadcast -->
+            <div class="algorithm-section" id="broadcast">
+                <div class="algorithm-title">
+                    <span class="emoji">📢</span>
+                    Broadcast (广播)
+                </div>
+                <div class="algorithm-description">
+                    一个进程（通常是根进程）将数据发送给所有其他进程。所有进程最终都拥有相同的数据副本。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: Process 0 准备广播数据 [100, 200, 300]</div>
+                    <div class="step">步骤2: Process 0 → Process 1, 2, 3 发送数据</div>
+                    <div class="step">步骤3: 所有进程接收并存储数据</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态</div>
+                        <div class="process process0">Process 0: [100, 200, 300] ← 根进程</div>
+                        <div class="process process1">Process 1: []</div>
+                        <div class="process process2">Process 2: []</div>
+                        <div class="process process3">Process 3: []</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态</div>
+                        <div class="process process0">Process 0: [100, 200, 300]</div>
+                        <div class="process process1">Process 1: [100, 200, 300]</div>
+                        <div class="process process2">Process 2: [100, 200, 300]</div>  
+                        <div class="process process3">Process 3: [100, 200, 300]</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Scatter -->
+            <div class="algorithm-section" id="scatter" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">📋</span>
+                    Scatter (分散)
+                </div>
+                <div class="algorithm-description">
+                    根进程将一个大数组分成若干块，每个进程接收其中一块数据。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: Process 0 准备数据 [10, 20, 30, 40, 50, 60, 70, 80]</div>
+                    <div class="step">步骤2: 将数据分成4块：[10,20], [30,40], [50,60], [70,80]</div>
+                    <div class="step">步骤3: 分别发送给Process 0,1,2,3</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态</div>
+                        <div class="process process0">Process 0: [10, 20, 30, 40, 50, 60, 70, 80] ← 根进程</div>
+                        <div class="process process1">Process 1: []</div>
+                        <div class="process process2">Process 2: []</div>
+                        <div class="process process3">Process 3: []</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态</div>
+                        <div class="process process0">Process 0: [10, 20]</div>
+                        <div class="process process1">Process 1: [30, 40]</div>
+                        <div class="process process2">Process 2: [50, 60]</div>
+                        <div class="process process3">Process 3: [70, 80]</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Gather -->
+            <div class="algorithm-section" id="gather" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">🔄</span>
+                    Gather (收集)
+                </div>
+                <div class="algorithm-description">
+                    所有进程将各自的数据发送给根进程，根进程收集所有数据并按进程顺序排列。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: 各进程准备本地数据</div>
+                    <div class="step">步骤2: Process 1,2,3 → Process 0 发送数据</div>
+                    <div class="step">步骤3: Process 0 按顺序收集所有数据</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态</div>
+                        <div class="process process0">Process 0: [1, 2] ← 根进程</div>
+                        <div class="process process1">Process 1: [3, 4]</div>
+                        <div class="process process2">Process 2: [5, 6]</div>
+                        <div class="process process3">Process 3: [7, 8]</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态</div>
+                        <div class="process process0">Process 0: [1, 2, 3, 4, 5, 6, 7, 8]</div>
+                        <div class="process process1">Process 1: [3, 4]</div>
+                        <div class="process process2">Process 2: [5, 6]</div>
+                        <div class="process process3">Process 3: [7, 8]</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AllGather -->
+            <div class="algorithm-section" id="allgather" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">🔄</span>
+                    AllGather (全收集)
+                </div>
+                <div class="algorithm-description">
+                    每个进程收集所有其他进程的数据，最终所有进程都拥有完整的数据集合。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: 各进程准备本地数据</div>
+                    <div class="step">步骤2: 每个进程向其他所有进程发送自己的数据</div>
+                    <div class="step">步骤3: 所有进程收集并合并数据</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态</div>
+                        <div class="process process0">Process 0: [10, 11]</div>
+                        <div class="process process1">Process 1: [20, 21]</div>
+                        <div class="process process2">Process 2: [30, 31]</div>
+                        <div class="process process3">Process 3: [40, 41]</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态</div>
+                        <div class="process process0">Process 0: [10, 11, 20, 21, 30, 31, 40, 41]</div>
+                        <div class="process process1">Process 1: [10, 11, 20, 21, 30, 31, 40, 41]</div>
+                        <div class="process process2">Process 2: [10, 11, 20, 21, 30, 31, 40, 41]</div>
+                        <div class="process process3">Process 3: [10, 11, 20, 21, 30, 31, 40, 41]</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reduce -->
+            <div class="algorithm-section" id="reduce" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">➕</span>
+                    Reduce (归约)
+                </div>
+                <div class="algorithm-description">
+                    所有进程的数据通过指定操作（如求和）合并到根进程中，这里使用求和操作。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: 各进程准备本地数据</div>
+                    <div class="step">步骤2: 执行求和操作：5+15+25+35=80, 8+18+28+38=92</div>
+                    <div class="step">步骤3: 结果存储在根进程(Process 0)</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态</div>
+                        <div class="process process0">Process 0: [5, 8] ← 根进程</div>
+                        <div class="process process1">Process 1: [15, 18]</div>
+                        <div class="process process2">Process 2: [25, 28]</div>
+                        <div class="process process3">Process 3: [35, 38]</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态（求和）</div>
+                        <div class="process process0">Process 0: [<span class="highlight">80, 92</span>] ← 求和结果</div>
+                        <div class="process process1">Process 1: [15, 18]</div>
+                        <div class="process process2">Process 2: [25, 28]</div>
+                        <div class="process process3">Process 3: [35, 38]</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AllReduce -->
+            <div class="algorithm-section" id="allreduce" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">➕</span>
+                    AllReduce (全归约)
+                </div>
+                <div class="algorithm-description">
+                    所有进程的数据通过指定操作合并，结果分发给所有进程。这里使用求和操作。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: 各进程准备本地数据</div>
+                    <div class="step">步骤2: 执行求和操作：2+6+10+14=32, 4+8+12+16=40</div>
+                    <div class="step">步骤3: 将结果分发给所有进程</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态</div>
+                        <div class="process process0">Process 0: [2, 4]</div>
+                        <div class="process process1">Process 1: [6, 8]</div>
+                        <div class="process process2">Process 2: [10, 12]</div>
+                        <div class="process process3">Process 3: [14, 16]</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态（求和）</div>
+                        <div class="process process0">Process 0: [<span class="highlight">32, 40</span>]</div>
+                        <div class="process process1">Process 1: [<span class="highlight">32, 40</span>]</div>
+                        <div class="process process2">Process 2: [<span class="highlight">32, 40</span>]</div>
+                        <div class="process process3">Process 3: [<span class="highlight">32, 40</span>]</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ScatterReduce -->
+            <div class="algorithm-section" id="scatterreduce" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">📋➕</span>
+                    ScatterReduce (分散归约)
+                </div>
+                <div class="algorithm-description">
+                    先将数据分散到各进程，然后各进程对相应位置的数据进行归约操作。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: 各进程准备矩阵数据</div>
+                    <div class="step">步骤2: 按行分散：Process 0处理第1行，Process 1处理第2行...</div>
+                    <div class="step">步骤3: 各进程对分配的行进行求和</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态（矩阵）</div>
+                        <div class="process process0">Process 0: [[1,2], [3,4], [5,6], [7,8]]</div>
+                        <div class="process process1">Process 1: [[2,1], [4,3], [6,5], [8,7]]</div>
+                        <div class="process process2">Process 2: [[1,3], [2,4], [3,5], [4,6]]</div>
+                        <div class="process process3">Process 3: [[3,1], [4,2], [5,3], [6,4]]</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态（按行求和）</div>
+                        <div class="process process0">Process 0: [<span class="highlight">7, 7</span>] ← 第1行求和</div>
+                        <div class="process process1">Process 1: [<span class="highlight">13, 13</span>] ← 第2行求和</div>
+                        <div class="process process2">Process 2: [<span class="highlight">19, 19</span>] ← 第3行求和</div>
+                        <div class="process process3">Process 3: [<span class="highlight">25, 25</span>] ← 第4行求和</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- All-to-All -->
+            <div class="algorithm-section" id="alltoall" style="display:none;">
+                <div class="algorithm-title">
+                    <span class="emoji">🔀</span>
+                    All-to-All (全交换)
+                </div>
+                <div class="algorithm-description">
+                    每个进程向每个其他进程发送不同的数据块，实现完全的数据重分布。
+                </div>
+                <div class="data-flow">
+                    <strong>通信过程：</strong><br>
+                    <div class="step">步骤1: 各进程准备发送数据矩阵</div>
+                    <div class="step">步骤2: Process i 的第j个元素发送给Process j</div>
+                    <div class="step">步骤3: 所有进程完成数据交换</div>
+                </div>
+                <div class="states-container">
+                    <div class="state initial-state">
+                        <div class="state-title">初始状态（发送矩阵）</div>
+                        <div class="process process0">Process 0: [100, 101, 102, 103] → 分别发送给P0,P1,P2,P3</div>
+                        <div class="process process1">Process 1: [110, 111, 112, 113] → 分别发送给P0,P1,P2,P3</div>
+                        <div class="process process2">Process 2: [120, 121, 122, 123] → 分别发送给P0,P1,P2,P3</div>
+                        <div class="process process3">Process 3: [130, 131, 132, 133] → 分别发送给P0,P1,P2,P3</div>
+                    </div>
+                    <div class="state final-state">
+                        <div class="state-title">结束状态（接收矩阵）</div>
+                        <div class="process process0">Process 0: [<span class="highlight">100, 110, 120, 130</span>] ← 从P0,P1,P2,P3接收</div>
+                        <div class="process process1">Process 1: [<span class="highlight">101, 111, 121, 131</span>] ← 从P0,P1,P2,P3接收</div>
+                        <div class="process process2">Process 2: [<span class="highlight">102, 112, 122, 132</span>] ← 从P0,P1,P2,P3接收</div>
+                        <div class="process process3">Process 3: [<span class="highlight">103, 113, 123, 133</span>] ← 从P0,P1,P2,P3接收</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showAlgorithm(algorithmName) {
+            // 隐藏所有算法
+            const sections = document.querySelectorAll('.algorithm-section');
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // 显示选定的算法
+            const targetSection = document.getElementById(algorithmName);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        // 默认显示第一个算法
+        document.addEventListener('DOMContentLoaded', function() {
+            showAlgorithm('broadcast');
+        });
+        
+        // 添加一些交互效果
+        document.querySelectorAll('.process').forEach(process => {
+            process.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            });
+            
+            process.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
