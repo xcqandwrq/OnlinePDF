@@ -4,4 +4,4 @@
 2. ascii.html
 3. Communication_Tools_Simulation.html
 4. polycomp-tutorial-full.pdf
-5. Polyhedral Model.pdf
+5. Polyhedral-Model.pdf
